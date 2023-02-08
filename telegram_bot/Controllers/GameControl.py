@@ -3,10 +3,16 @@ from Controllers.Hangman import HangmanState
 
 
 class GameControl:
-    def __init__(self, db):
-        self.db = db
-        self.user = self.db.get_collection("users")
-        self.games: List[HangmanState] = []
+
+    _instance = None
+    # method to create and certify that only one unique instance of the class GameControl is in the application
+    def __new__(cls, db):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.db = db
+            cls._instance.user = cls._instance.db.get_collection("users")
+            cls._instance.games: List[HangmanState] = []
+        return cls._instance
 
     def get_game(self, id):
         return [game for game in self.games if game.id == id]
@@ -29,7 +35,8 @@ class GameControl:
         user_info = {
             "chat_id": hangman.id,
         }
-        if not self.user.find({"chat_id": hangman.id}):
-            result = self.user.insert_one(user_info)
-            return result.inserted_id
+        result = self.user.find_one({"chat_id": hangman.id})
+        if not result:
+            res = self.user.insert_one(user_info)
+            return res.inserted_id
         return hangman.id
