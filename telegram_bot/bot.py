@@ -8,6 +8,7 @@ from telegram.ext import (
     Updater,
 )
 
+
 def bot():
     updater = Updater(token=bot_settings.BOT_TOKEN, use_context=True)
     dispatcher = updater.dispatcher
@@ -24,10 +25,10 @@ def bot():
     message_handler = MessageHandler(Filters.text, respond)
     dispatcher.add_handler(message_handler)
 
-
     logger.info("* Start polling...")
     updater.start_polling()  # Starts polling in a background thread.
     updater.idle()  # Wait until Ctrl+C is pressed
     logger.info("* Server turning off! *")
+
 
 bot()

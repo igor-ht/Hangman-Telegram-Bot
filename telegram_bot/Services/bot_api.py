@@ -1,12 +1,13 @@
+import Settings.bot_settings as bot_settings
 from Logger.logger import logger
 from Controllers.Hangman import HangmanState
-import Settings.bot_settings as bot_settings
+from Model.mongoDB import connect_mongodb_hangman, check_mongodb_connection, database
+from Controllers.GameControl import GameControl
 from telegram import Update
 from telegram.ext import CallbackContext
-from Model.mongoDB import connect_mongodb_hangman
-from Controllers.GameControl import GameControl
 
-database = connect_mongodb_hangman()
+if not check_mongodb_connection():
+    database = connect_mongodb_hangman()
 game_control = GameControl(database)
 logger.info(f"** Singleton GameControl created **")
 
@@ -63,19 +64,16 @@ def respond(update: Update, context: CallbackContext):
             chat_id, f"{game[0].display} 👉 {game[0].chances} chances left"
         )
         if game[0].state == "lost":
+            logger.info(f"chat_id #{chat_id} lost!")
             context.bot.send_message(
                 chat_id, f"Nice try! The word was 👉 {game[0].word}"
             )
-            # game[0].start_game()
         elif game[0].state == "won":
+            logger.info(f"chat_id #{chat_id} won!")
             context.bot.send_message(
                 chat_id, f"Well Done! You got the right word! 👉 {game[0].word}"
             )
-            # game[0].start_game()
     else:
         context.bot.send_message(
             chat_id, "👉 /start to start playing or 👉 /game to play again"
         )
-        # game_control.add_chat(HangmanState(chat_id))
-        # logger.info(f"GameState created with chat id #{chat_id}")
-        # context.bot.send_message(chat_id, bot_settings.WELCOME)
