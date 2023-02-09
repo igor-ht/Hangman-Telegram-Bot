@@ -1,6 +1,8 @@
-import Settings.bot_settings as bot_settings
-from Logger.logger import logger
-from Services.bot_api import start, game, help_rules, respond
+import bot_settings as bot_settings
+from mongoDB import connect_mongodb_hangman
+from GameControl import GameControl
+from logger import logger
+from bot_handlers import start, game, help_rules, respond
 from telegram.ext import (
     CommandHandler,
     MessageHandler,
@@ -9,21 +11,22 @@ from telegram.ext import (
 )
 
 
+database = connect_mongodb_hangman()
+game_control = GameControl(database)
+logger.info(f"** Singleton GameControl created **")
+
+
 def bot():
     updater = Updater(token=bot_settings.BOT_TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
-    start_handler = CommandHandler("start", start)
-    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(CommandHandler("start", start))
 
-    game_handler = CommandHandler("game", game)
-    dispatcher.add_handler(game_handler)
+    dispatcher.add_handler(CommandHandler("game", game))
 
-    help_handler = CommandHandler("help", help_rules)
-    dispatcher.add_handler(help_handler)
+    dispatcher.add_handler(CommandHandler("help", help_rules))
 
-    message_handler = MessageHandler(Filters.text, respond)
-    dispatcher.add_handler(message_handler)
+    dispatcher.add_handler(MessageHandler(Filters.text, respond))
 
     logger.info("* Start polling...")
     updater.start_polling()  # Starts polling in a background thread.

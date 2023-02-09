@@ -1,5 +1,5 @@
 import random
-from Settings.bot_settings import LETTER_BLOCKS
+from bot_settings import LETTER_BLOCKS
 
 
 class HangmanState:

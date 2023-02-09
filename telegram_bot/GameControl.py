@@ -1,18 +1,11 @@
-from typing import List
-from Controllers.Hangman import HangmanState
+from Hangman import HangmanState
 
 
 class GameControl:
-
-    _instance = None
-    # method to create and certify that only one unique instance of the class GameControl is in the application
-    def __new__(cls, db):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.db = db
-            cls._instance.user = cls._instance.db.get_collection("users")
-            cls._instance.games: List[HangmanState] = []
-        return cls._instance
+    def __init__(self, database):
+        self.database = database
+        self.user = self.database.get_collection("users")
+        self.games = []
 
     def get_game(self, id):
         return [game for game in self.games if game.id == id]

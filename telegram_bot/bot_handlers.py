@@ -1,15 +1,11 @@
-import Settings.bot_settings as bot_settings
-from Logger.logger import logger
-from Controllers.Hangman import HangmanState
-from Model.mongoDB import connect_mongodb_hangman, check_mongodb_connection, database
-from Controllers.GameControl import GameControl
+import bot_settings as bot_settings
+from logger import logger
+from Hangman import HangmanState
+from GameControl import GameControl
 from telegram import Update
 from telegram.ext import CallbackContext
 
-if not check_mongodb_connection():
-    database = connect_mongodb_hangman()
-game_control = GameControl(database)
-logger.info(f"** Singleton GameControl created **")
+game_control: GameControl
 
 
 def start(update: Update, context: CallbackContext):
