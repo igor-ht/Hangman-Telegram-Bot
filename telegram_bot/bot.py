@@ -1,6 +1,4 @@
 import bot_settings as bot_settings
-from mongoDB import connect_mongodb_hangman
-from GameControl import GameControl
 from logger import logger
 from bot_handlers import start, game, help_rules, respond
 from telegram.ext import (
@@ -9,11 +7,6 @@ from telegram.ext import (
     Filters,
     Updater,
 )
-
-
-database = connect_mongodb_hangman()
-game_control = GameControl(database)
-logger.info(f"** Singleton GameControl created **")
 
 
 def bot():

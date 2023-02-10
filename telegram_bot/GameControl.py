@@ -5,31 +5,45 @@ class GameControl:
     def __init__(self, database):
         self.database = database
         self.user = self.database.get_collection("users")
-        self.games = []
 
-    def get_game(self, id):
-        return [game for game in self.games if game.id == id]
+    def create_new_game(self, id):
+        new_game = {
+            "chat_id": id,
+            "word": "",
+            "chances": 7,
+            "inserted_letters": [],
+            "state": "start",
+        }
+        res = self.user.insert_one(new_game)
+        return res.inserted_id
+
+    def get_game_from_db(self, id):
+        result = self.user.find_one({"chat_id": id})
+        result.pop("_id")
+        game = HangmanState(**result)
+        return game
 
     def find_chat(self, id):
-        result = self.user.find({"chat_id": id})
-        game = self.get_game(id)
-        if result and game:
+        result = self.user.find_one({"chat_id": id})
+        if result:
             return True
         return False
 
-    def del_chat(self, id):
-        self.games = [game for game in self.games if game.id != id]
-        result = self.user.delete_one({"chat_id": id})
+    def update_game(self, game: HangmanState):
+        game_from_db = self.get_game_from_db(game.chat_id)
+        result = self.user.update_one(
+            {"chat_id": game_from_db.chat_id},
+            {
+                "$set": {
+                    "word": game.word,
+                    "chances": game.chances,
+                    "inserted_letters": game.inserted_letters,
+                    "state": game.state,
+                }
+            },
+        )
         return result
 
-    def add_chat(self, hangman: HangmanState):
-        if hangman not in self.games:
-            self.games.append(hangman)
-        user_info = {
-            "chat_id": hangman.id,
-        }
-        result = self.user.find_one({"chat_id": hangman.id})
-        if not result:
-            res = self.user.insert_one(user_info)
-            return res.inserted_id
-        return hangman.id
+    def del_chat(self, id):
+        result = self.user.delete_one({"chat_id": id})
+        return result
